@@ -18,17 +18,18 @@
     'use strict';
 
     const url_api = "https://www.typingclub.com/api/v1.1/";
-    const url_tokens = url_api + "student/refresh_tokens/";
-    const url_program = url_api + "program/";
     const url_student = url_api + "student/";
-    const default_layout = "en,british-pc"
+    const url_tokens = url_student + "refresh_tokens/";
+    const url_program = url_api + "program/";
+    // in case there's no saved layout and current program doesn't define one either
+    const default_layout = "en,british-pc";
 
-    var token;
-    var student_id;
-    var program_id;
-    var program_kbd;
-    var keyboard;
-    var keyboard_pending;
+    var token; // authorization token is needed to change layout
+    var student_id; // current user numeric id
+    var program_id; // current program numeric id
+    var program_kbd; // keyboard layout defined in current program
+    var keyboard; // current layout
+    var keyboard_pending; // layout is being set
 
     (function(open, send) {
         // https://stackoverflow.com/a/56499250
@@ -39,6 +40,7 @@
                     if(this.responseText) {
                         const resp = JSON.parse(this.responseText)[0];
                         token = resp.token;
+                        console.log("TOKEN REFRESHED", token);
                     } else console.log("TOKEN NOT REFRESHED");
                 } else if(url.startsWith(url_program) && !url.includes("/game/") && this.status == 200) {
                     const resp = JSON.parse(this.responseText);
@@ -52,7 +54,7 @@
                     }
                     console.log("PROGRAM KBD", program_kbd, "CURRENT", keyboard, "TARGET", target_kbd);
                     if(target_kbd !== keyboard) {
-                        console.log("SWITCH TO", target_kbd);
+                        console.log("SWITCH TO", target_kbd, "TOKEN", token);
 
                         fetch(url_student + student_id + "/", {
                             method: 'POST',
@@ -76,8 +78,8 @@
                     if(this.status == 202) {
                         keyboard = keyboard_pending;
                         GM_setValue("lang." + program_id, keyboard);
-                    }
-                    console.log("MANUAL SWITCH TO", keyboard, "FOR PROGRAM", program_id);
+                        console.log("MANUAL SWITCH TO", keyboard, "FOR PROGRAM", program_id);
+                    } else console.log("MANUAL SWITCH FROM", keyboard, "TO", keyboard_pending, "FOR PROGRAM", program_id, "FAILED");
                 }
             }, false);
             open.apply(this, arguments);
