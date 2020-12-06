@@ -62,7 +62,11 @@
                                 'Content-type': 'application/json',
                                 'x-http-method-override': 'PATCH'
                             }
-                        }).then(val => window.location.reload());
+                        }).then(response => {
+                            if(response.status == 202) {
+                                window.location.reload();
+                            } else console.log("SWITCH FAILED WITH STATUS", response.status);
+                        });
                     }
                 } else if(url.startsWith(url_student + "me/") && this.status == 200) {
                     const resp = JSON.parse(this.responseText);
