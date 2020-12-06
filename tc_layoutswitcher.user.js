@@ -7,6 +7,7 @@
 // @downloadURL  https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
 // @updateURL    https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
 // @author       Winand
+// @license      MIT
 // @match        https://www.typingclub.com/sportal/*
 // @grant        GM_setValue
 // @grant        GM_getValue
