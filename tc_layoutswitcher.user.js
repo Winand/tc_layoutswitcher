@@ -3,6 +3,9 @@
 // @namespace    Winand
 // @version      20.1206
 // @description  Auto-switch keyboard layouts on TypingClub website
+// @homepageURL  https://github.com/Winand/tc_layoutswitcher
+// @downloadURL  https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
+// @updateURL    https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
 // @author       Winand
 // @match        https://www.typingclub.com/sportal/*
 // @grant        GM_setValue
