@@ -88,7 +88,7 @@
 
         XMLHttpRequest.prototype.send = function(body) {
             if(this.__sentry_xhr__) {
-                var url = new URL(this.__sentry_xhr__.url, document.baseURI).href
+                var url = new URL(this.__sentry_xhr__.url, document.baseURI).href;
                 if(url == url_student + student_id + "/") {
                     // 'keyboard' may be undefined if other property is being changed
                     keyboard_pending = JSON.parse(body).keyboard;
