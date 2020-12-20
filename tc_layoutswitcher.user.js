@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TypingClub layout switcher
 // @namespace    Winand
-// @version      20.1210
+// @version      20.1221
 // @description  Auto-switch keyboard layouts on TypingClub website
 // @homepageURL  https://github.com/Winand/tc_layoutswitcher
 // @downloadURL  https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
@@ -95,6 +95,16 @@
                 }
             }
             send.apply(this, arguments);
+        };
+
+        if("prototype" in send) {
+            console.log("LOADED TOO LATE, TRYING TO REFRESH TOKEN");
+            var poll_timer = setInterval(() => {
+                if(!token) {
+                    console.log("RESTART...");
+                    start(); // TypingClub entry point
+                } else clearTimeout(poll_timer);
+            }, 1000);
         };
     })(XMLHttpRequest.prototype.open, XMLHttpRequest.prototype.send);
 })();
