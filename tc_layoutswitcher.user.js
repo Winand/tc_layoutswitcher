@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TypingClub layout switcher
 // @namespace    Winand
-// @version      20.1221
+// @version      21.504
 // @description  Auto-switch keyboard layouts on TypingClub website
 // @homepageURL  https://github.com/Winand/tc_layoutswitcher
 // @downloadURL  https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
@@ -20,8 +20,8 @@
 
     const url_api = "https://www.typingclub.com/api/v1.1/";
     const url_student = url_api + "student/";
-    const url_tokens = url_student + "refresh_tokens/";
-    const url_program = url_api + "program/";
+    const url_tokens = "https://www.typingclub.com/auth/refresh_tokens/";
+    const url_program = url_api + "program2/";
     // in case there's no saved layout and current program doesn't define one either
     const default_layout = "en,british-pc";
 
@@ -43,7 +43,7 @@
                         token = resp.token;
                         console.log("TOKEN REFRESHED", token);
                     } else console.log("TOKEN NOT REFRESHED");
-                } else if(url.startsWith(url_program) && !url.includes("/game/") && this.status == 200) {
+                } else if(url.startsWith(url_program) && this.status == 200) {
                     const resp = JSON.parse(this.responseText);
                     program_id = resp.id;
                     program_kbd = resp.keyboard == null ? default_layout : resp.keyboard;
