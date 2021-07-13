@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TypingClub layout switcher
 // @namespace    Winand
-// @version      21.504
+// @version      21.713
 // @description  Auto-switch keyboard layouts on TypingClub website
 // @homepageURL  https://github.com/Winand/tc_layoutswitcher
 // @downloadURL  https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
@@ -9,8 +9,10 @@
 // @author       Winand
 // @license      MIT
 // @match        https://www.typingclub.com/*
+// @match        https://www.edclub.com/sportal/*
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        unsafeWindow
 // @run-at       document-start
 // ==/UserScript==
 
@@ -18,10 +20,10 @@
 (function() {
     'use strict';
 
-    const url_api = "https://www.typingclub.com/api/v1.1/";
+    const url_api = window.location.origin + "/api/v1.1/";
     const url_student = url_api + "student/";
-    const url_tokens = "https://www.typingclub.com/auth/refresh_tokens/";
-    const url_program = url_api + "program2/";
+    const url_tokens = window.location.origin + "/auth/refresh_tokens/";
+    const url_program = "//static.typingclub.com/m/build/lessonplans/"; // url_api + "program2/";
     // in case there's no saved layout and current program doesn't define one either
     const default_layout = "en,british-pc";
 
@@ -32,19 +34,14 @@
     var keyboard; // current layout
     var keyboard_pending; // layout is being set
 
-    (function(open, send) {
+    (function(open, send, window_fetch) {
         // https://stackoverflow.com/a/56499250
-        XMLHttpRequest.prototype.open = function() {
-            this.addEventListener("load", function() {
-                var url = this.responseURL;
-                if(url == url_tokens && this.status == 200) {
-                    if(this.responseText) {
-                        const resp = JSON.parse(this.responseText)[0];
-                        token = resp.token;
-                        console.log("TOKEN REFRESHED", token);
-                    } else console.log("TOKEN NOT REFRESHED");
-                } else if(url.startsWith(url_program) && this.status == 200) {
-                    const resp = JSON.parse(this.responseText);
+
+        unsafeWindow.fetch = async (resource, ...args) => {
+            // https://stackoverflow.com/a/64961272/1119602
+            const response = await window_fetch(resource, ...args);
+            if(resource.startsWith(url_program) && response.ok) {
+                response.clone().json().then(resp => {
                     program_id = resp.id;
                     program_kbd = resp.keyboard == null ? default_layout : resp.keyboard;
                     var target_kbd = GM_getValue("lang." + program_id);
@@ -71,6 +68,21 @@
                             } else console.log("SWITCH FAILED WITH STATUS", response.status);
                         });
                     }
+                }).catch(err => console.error(err));
+            }
+            return response;
+        };
+        // unsafeWindow.fetch.toString = () => "function fetch() {   [native code]   }";
+
+        XMLHttpRequest.prototype.open = function() {
+            this.addEventListener("load", function() {
+                var url = this.responseURL;
+                if(url == url_tokens && this.status == 200) {
+                    if(this.responseText) {
+                        const resp = JSON.parse(this.responseText)[0];
+                        token = resp.token;
+                        console.log("TOKEN REFRESHED", token);
+                    } else console.log("TOKEN NOT REFRESHED");
                 } else if(url.startsWith(url_student + "me/") && this.status == 200) {
                     const resp = JSON.parse(this.responseText);
                     student_id = resp.id;
@@ -106,5 +118,5 @@
                 } else clearTimeout(poll_timer);
             }, 1000);
         };
-    })(XMLHttpRequest.prototype.open, XMLHttpRequest.prototype.send);
+    })(XMLHttpRequest.prototype.open, XMLHttpRequest.prototype.send, window.fetch);
 })();
