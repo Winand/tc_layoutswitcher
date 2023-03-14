@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TypingClub layout switcher
 // @namespace    Winand
-// @version      21.713
+// @version      23.314
 // @description  Auto-switch keyboard layouts on TypingClub website
 // @homepageURL  https://github.com/Winand/tc_layoutswitcher
 // @downloadURL  https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
@@ -74,7 +74,8 @@
         };
         // unsafeWindow.fetch.toString = () => "function fetch() {   [native code]   }";
 
-        XMLHttpRequest.prototype.open = function() {
+        XMLHttpRequest.prototype.open = function(method, url) {
+            this._url = window.location.origin + url
             this.addEventListener("load", function() {
                 var url = this.responseURL;
                 if(url == url_tokens && this.status == 200) {
@@ -99,12 +100,9 @@
         };
 
         XMLHttpRequest.prototype.send = function(body) {
-            if(this.__sentry_xhr__) {
-                var url = new URL(this.__sentry_xhr__.url, document.baseURI).href;
-                if(url == url_student + student_id + "/") {
-                    // 'keyboard' may be undefined if other property is being changed
-                    keyboard_pending = JSON.parse(body).keyboard;
-                }
+            if(this._url == url_student + student_id + "/") {
+                // 'keyboard' may be undefined if other property is being changed
+                keyboard_pending = JSON.parse(body).keyboard;
             }
             send.apply(this, arguments);
         };
