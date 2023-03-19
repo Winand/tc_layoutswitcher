@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TypingClub layout switcher
 // @namespace    Winand
-// @version      23.314
+// @version      23.319
 // @description  Auto-switch keyboard layouts on TypingClub website
 // @homepageURL  https://github.com/Winand/tc_layoutswitcher
 // @downloadURL  https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
@@ -24,6 +24,7 @@
     const url_student = url_api + "student/";
     const url_tokens = window.location.origin + "/auth/refresh_tokens/";
     const url_program = "//static.typingclub.com/m/build/lessonplans/"; // url_api + "program2/";
+    const url_program_page = (program_id) => `${window.location.origin}/sportal/program-${program_id}.game`; //https://stackoverflow.com/a/75611091
     // in case there's no saved layout and current program doesn't define one either
     const default_layout = "en,british-pc";
 
@@ -33,6 +34,13 @@
     var program_kbd; // keyboard layout defined in current program
     var keyboard; // current layout
     var keyboard_pending; // layout is being set
+
+    /* Get the final path component, without its suffix.
+    https://stackoverflow.com/a/66939312 URL
+    https://stackoverflow.com/a/6941653 protocol
+    https://stackoverflow.com/a/45587081 rsplit
+    */
+    const getStem = (fileName) => new URL((fileName.startsWith("//") ? window.location.protocol : "") + fileName).pathname.split("/").pop().split(".").slice(0, -1).join('.');
 
     (function(open, send, window_fetch) {
         // https://stackoverflow.com/a/56499250
@@ -64,7 +72,8 @@
                             }
                         }).then(response => {
                             if(response.status == 202) {
-                                window.location.reload();
+                                //https://stackoverflow.com/q/1226714#comment60232404_1226718
+                                window.location = url_program_page(getStem(resource))
                             } else console.log("SWITCH FAILED WITH STATUS", response.status);
                         });
                     }
