@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TypingClub layout switcher
 // @namespace    Winand
-// @version      23.319
+// @version      23.329
 // @description  Auto-switch keyboard layouts on TypingClub website
 // @homepageURL  https://github.com/Winand/tc_layoutswitcher
 // @downloadURL  https://github.com/Winand/tc_layoutswitcher/raw/master/tc_layoutswitcher.user.js
@@ -23,7 +23,7 @@
     const url_api = window.location.origin + "/api/v1.1/";
     const url_student = url_api + "student/";
     const url_tokens = window.location.origin + "/auth/refresh_tokens/";
-    const url_program = "//static.typingclub.com/m/build/lessonplans/"; // url_api + "program2/";
+    const url_program = "/m/build/lessonplans/"; // e.g. https://static.typingclub.com/m/build/lessonplans/54.json
     const url_program_page = (program_id) => `${window.location.origin}/sportal/program-${program_id}.game`; //https://stackoverflow.com/a/75611091
     // in case there's no saved layout and current program doesn't define one either
     const default_layout = "en,british-pc";
@@ -35,12 +35,14 @@
     var keyboard; // current layout
     var keyboard_pending; // layout is being set
 
+    /* Get pathname from URL. Protocol can be omitted: //website.name/pathname */
+    const getPathname = (url) => new URL((url.startsWith("//") ? window.location.protocol : "") + url).pathname;
     /* Get the final path component, without its suffix.
     https://stackoverflow.com/a/66939312 URL
     https://stackoverflow.com/a/6941653 protocol
     https://stackoverflow.com/a/45587081 rsplit
     */
-    const getStem = (fileName) => new URL((fileName.startsWith("//") ? window.location.protocol : "") + fileName).pathname.split("/").pop().split(".").slice(0, -1).join('.');
+    const getStem = (fileName) => getPathname(fileName).split("/").pop().split(".").slice(0, -1).join('.');
 
     (function(open, send, window_fetch) {
         // https://stackoverflow.com/a/56499250
@@ -48,9 +50,10 @@
         unsafeWindow.fetch = async (resource, ...args) => {
             // https://stackoverflow.com/a/64961272/1119602
             const response = await window_fetch(resource, ...args);
-            if(resource.startsWith(url_program) && response.ok) {
+            if(getPathname(resource).startsWith(url_program) && response.ok) {
                 response.clone().json().then(resp => {
                     program_id = resp.id;
+                    console.log("LESSON PLANS LOADED FOR PROGRAM", program_id);
                     program_kbd = resp.keyboard == null ? default_layout : resp.keyboard;
                     var target_kbd = GM_getValue("lang." + program_id);
                     if(target_kbd == undefined) {
